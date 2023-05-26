@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "sentinel_cluster" {
 }
 
 resource "aws_ecr_repository" "sentinel_repository" {
-  name = "sentinel-repository"
+  name = "sentinel"
 }
 
 resource "aws_ecs_task_definition" "sentinel_task" {
@@ -13,7 +13,7 @@ resource "aws_ecs_task_definition" "sentinel_task" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
 
-  cpu = "256"
+  cpu    = "256"
   memory = "512"
 
   container_definitions = <<EOF
@@ -37,21 +37,27 @@ resource "aws_ecs_task_definition" "sentinel_task" {
 resource "aws_iam_role" "sentinel_task_execution_role" {
   name               = "sentinel-task-execution-role"
   assume_role_policy = <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "ecs-tasks.amazonaws.com"
-        },
-        "Action": "sts:AssumeRole"
-      }
-    ]
-  }
-  EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
 }
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "sentinel_task_execution_policy_attachment" {
+  role       = aws_iam_role.sentinel_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 
 resource "aws_iam_role" "sentinel_task_role" {
   name               = "sentinel-task-role"
@@ -80,8 +86,8 @@ resource "aws_ecs_service" "sentinel_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    security_groups = [aws_security_group.sentinel_sg.id]
-    subnets = [module.vpc.public_subnets[0], module.vpc.public_subnets[1], module.vpc.public_subnets[2]]
+    security_groups  = [aws_security_group.sentinel_sg.id]
+    subnets          = [module.vpc.public_subnets[0], module.vpc.public_subnets[1], module.vpc.public_subnets[2]]
     assign_public_ip = true
   }
 }
