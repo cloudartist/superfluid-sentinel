@@ -4,8 +4,8 @@ module "vpc" {
   name = var.vpc_name
   cidr = var.vpc_cidr
 
-  azs             = var.availability_zones
-  public_subnets  = var.public_subnets
+  azs            = var.availability_zones
+  public_subnets = var.public_subnets
 
   tags = {
     Terraform   = "true"

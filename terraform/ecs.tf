@@ -13,7 +13,7 @@ resource "aws_ecs_task_definition" "sentinel_task" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
 
-  cpu = "256"
+  cpu    = "256"
   memory = "512"
 
   container_definitions = <<EOF
@@ -99,8 +99,8 @@ resource "aws_ecs_service" "sentinel_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    security_groups = [aws_security_group.sentinel_sg.id]
-    subnets = [module.vpc.public_subnets[0], module.vpc.public_subnets[1], module.vpc.public_subnets[2]]
+    security_groups  = [aws_security_group.sentinel_sg.id]
+    subnets          = [module.vpc.public_subnets[0], module.vpc.public_subnets[1], module.vpc.public_subnets[2]]
     assign_public_ip = true
   }
 }
