@@ -51,26 +51,13 @@ resource "aws_iam_role" "sentinel_task_execution_role" {
   ]
 }
 EOF
+}
 
-  # Allow ECS service to pull images from ECR
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-      ],
-      "Resource": "*"
-    }
-  ]
+resource "aws_iam_role_policy_attachment" "sentinel_task_execution_policy_attachment" {
+  role       = aws_iam_role.sentinel_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-EOF
-}
+
 
 resource "aws_iam_role" "sentinel_task_role" {
   name               = "sentinel-task-role"
