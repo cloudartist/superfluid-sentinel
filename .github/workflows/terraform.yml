@@ -175,4 +175,5 @@ jobs:
     - name: Terraform Apply
       run: |
         ls -la
-        terraform apply -auto-approve tfplan
+        ls -la tfplan
+        terraform apply -auto-approve tfplan/tfplan
