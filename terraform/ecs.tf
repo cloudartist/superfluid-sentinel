@@ -37,20 +37,39 @@ resource "aws_ecs_task_definition" "sentinel_task" {
 resource "aws_iam_role" "sentinel_task_execution_role" {
   name               = "sentinel-task-execution-role"
   assume_role_policy = <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "ecs-tasks.amazonaws.com"
-        },
-        "Action": "sts:AssumeRole"
-      }
-    ]
-  }
-  EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+
+  # Allow ECS service to pull images from ECR
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
 }
 
 resource "aws_iam_role" "sentinel_task_role" {
