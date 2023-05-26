@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "sentinel_cluster" {
 }
 
 resource "aws_ecr_repository" "sentinel_repository" {
-  name = "sentinel-repository"
+  name = "sentinel"
 }
 
 resource "aws_ecs_task_definition" "sentinel_task" {
