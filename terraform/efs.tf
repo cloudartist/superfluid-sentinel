@@ -18,10 +18,10 @@ resource "aws_security_group" "sentinel_efs_sg" {
 }
 
 resource "aws_security_group_rule" "sentinel_efs_sg_ingress" {
-  security_group_id       = aws_security_group.sentinel_efs_sg.id
-  type                    = "ingress"
-  from_port               = 2049
-  to_port                 = 2049
-  protocol                = "tcp"
+  security_group_id        = aws_security_group.sentinel_efs_sg.id
+  type                     = "ingress"
+  from_port                = 2049
+  to_port                  = 2049
+  protocol                 = "tcp"
   source_security_group_id = aws_security_group.sentinel_sg.id
 }
