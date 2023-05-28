@@ -15,10 +15,10 @@ resource "aws_secretsmanager_secret" "sentinel_secret" {
 }
 
 resource "aws_secretsmanager_secret_version" "sentinel_secret" {
-  secret_id     = aws_secretsmanager_secret.sentinel_secret.id
+  secret_id = aws_secretsmanager_secret.sentinel_secret.id
   secret_string = jsonencode({
-    "HTTP_RPC_NODE": "HTTP_RPC_NODE",
-    "PRIVATE_KEY": "PRIVATE_KEY"
+    "HTTP_RPC_NODE" : "HTTP_RPC_NODE",
+    "PRIVATE_KEY" : "PRIVATE_KEY"
   })
 
   lifecycle {
@@ -76,11 +76,11 @@ resource "aws_ecs_task_definition" "sentinel_task" {
 }
 
 resource "aws_ecs_service" "sentinel_service" {
-  name            = "sentinel-service"
-  cluster         = aws_ecs_cluster.sentinel_cluster.id
-  task_definition = aws_ecs_task_definition.sentinel_task.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  name                   = "sentinel-service"
+  cluster                = aws_ecs_cluster.sentinel_cluster.id
+  task_definition        = aws_ecs_task_definition.sentinel_task.arn
+  desired_count          = 1
+  launch_type            = "FARGATE"
   enable_execute_command = true
 
   network_configuration {
