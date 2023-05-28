@@ -61,6 +61,23 @@ resource "aws_ecs_task_definition" "sentinel_task" {
       "portMappings": [
         { "containerPort": 9100, "hostPort": 9100 }
       ],
+      "mountPoints": [
+        {
+          "sourceVolume": "efs-volume",
+          "containerPath": "/app/data"
+        }
+      ],
+      "volumes": [
+        {
+          "name": "efs-volume",
+          "efsVolumeConfiguration": {
+            "fileSystemId": "${aws_efs_file_system.sentinel_efs.id}",
+            "rootDirectory": "/",
+            "transitEncryption": "ENABLED",
+            "transitEncryptionPort": 2049
+          }
+        }
+      ],
       "essential": true,
       "logConfiguration": {
         "logDriver": "awslogs",
