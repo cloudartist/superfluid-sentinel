@@ -6,6 +6,28 @@ resource "aws_ecr_repository" "sentinel_repository" {
   name = "sentinel"
 }
 
+resource "aws_cloudwatch_log_group" "sentinel_log_group" {
+  name              = "/ecs/sentinel-service"
+  retention_in_days = 30
+}
+resource "aws_secretsmanager_secret" "sentinel_secret" {
+  name = "sentinel-secret"
+}
+
+resource "aws_secretsmanager_secret_version" "sentinel_secret" {
+  secret_id     = aws_secretsmanager_secret.sentinel_secret.id
+  secret_string = jsonencode({
+    "HTTP_RPC_NODE": "HTTP_RPC_NODE",
+    "PRIVATE_KEY": "PRIVATE_KEY"
+  })
+
+  lifecycle {
+    ignore_changes = [
+      secret_string,
+    ]
+  }
+}
+
 resource "aws_ecs_task_definition" "sentinel_task" {
   family                   = "sentinel-task"
   execution_role_arn       = aws_iam_role.sentinel_task_execution_role.arn
@@ -28,53 +50,27 @@ resource "aws_ecs_task_definition" "sentinel_task" {
           "protocol": "tcp"
         }
       ],
-      "essential": true
-    }
-  ]
-  EOF
-}
-
-resource "aws_iam_role" "sentinel_task_execution_role" {
-  name               = "sentinel-task-execution-role"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "sentinel_task_execution_policy_attachment" {
-  role       = aws_iam_role.sentinel_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-
-resource "aws_iam_role" "sentinel_task_role" {
-  name               = "sentinel-task-role"
-  assume_role_policy = <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "ecs-tasks.amazonaws.com"
+      "secrets": [
+        {
+          "name": "HTTP_RPC_NODE",
+          "valueFrom": "${aws_secretsmanager_secret.sentinel_secret.arn}"
         },
-        "Action": "sts:AssumeRole"
+        {
+          "name": "PRIVATE_KEY",
+          "valueFrom": "${aws_secretsmanager_secret.sentinel_secret.arn}"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${aws_cloudwatch_log_group.sentinel_log_group.name}",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "sentinel"
+        }
       }
-    ]
-  }
+    }
+  ]
   EOF
 }
 
@@ -97,12 +93,12 @@ resource "aws_security_group" "sentinel_sg" {
   description = "Security group for Sentinel service"
   vpc_id      = module.vpc.vpc_id
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # ingress {
+  #   from_port   = 80
+  #   to_port     = 80
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   egress {
     from_port   = 0
