@@ -43,22 +43,23 @@ resource "aws_ecs_task_definition" "sentinel_task" {
     {
       "name": "sentinel-container",
       "image": "${aws_ecr_repository.sentinel_repository.repository_url}:latest",
-      "portMappings": [
-        {
-          "containerPort": 80,
-          "hostPort": 80,
-          "protocol": "tcp"
-        }
-      ],
       "secrets": [
         {
           "name": "HTTP_RPC_NODE",
-          "valueFrom": "${aws_secretsmanager_secret.sentinel_secret.arn}"
+          "valueFrom": "${aws_secretsmanager_secret.sentinel_secret.arn}:HTTP_RPC_NODE::"
         },
         {
           "name": "PRIVATE_KEY",
-          "valueFrom": "${aws_secretsmanager_secret.sentinel_secret.arn}"
+          "valueFrom": "${aws_secretsmanager_secret.sentinel_secret.arn}:PRIVATE_KEY::"
         }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "DB_PATH", "value": "data/db.sqlite" },
+        { "name": "METRICS_PORT", "value": "9100" }
+      ],
+      "portMappings": [
+        { "containerPort": 9100, "hostPort": 9100 }
       ],
       "essential": true,
       "logConfiguration": {
@@ -80,6 +81,7 @@ resource "aws_ecs_service" "sentinel_service" {
   task_definition = aws_ecs_task_definition.sentinel_task.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
     security_groups  = [aws_security_group.sentinel_sg.id]
@@ -92,13 +94,6 @@ resource "aws_security_group" "sentinel_sg" {
   name        = "sentinel-security-group"
   description = "Security group for Sentinel service"
   vpc_id      = module.vpc.vpc_id
-
-  # ingress {
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
 
   egress {
     from_port   = 0

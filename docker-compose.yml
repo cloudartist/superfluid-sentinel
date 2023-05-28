@@ -22,7 +22,7 @@ services:
           cpus: '0.50'
           memory: 500M
         reservations:
-          memory: 20M
+          memory: 30M
 
 volumes:
   data:

@@ -31,6 +31,10 @@ resource "aws_iam_role_policy_attachment" "sentinel_task_execution_policy_attach
   role       = aws_iam_role.sentinel_task_execution_role.name
   policy_arn = aws_iam_policy.sentinel_secret_policy.arn
 }
+resource "aws_iam_role_policy_attachment" "sentinel_task_execution_policy_attachment_ssm" {
+  role       = aws_iam_role.sentinel_task_role.name
+  policy_arn = aws_iam_policy.sentinel_task_policy.arn
+}
 
 resource "aws_iam_policy" "sentinel_secret_policy" {
   name        = "sentinel-secret-policy"
@@ -48,6 +52,28 @@ resource "aws_iam_policy" "sentinel_secret_policy" {
             "Resource": [
                 "${aws_secretsmanager_secret.sentinel_secret.arn}"
             ]
+        }
+    ]
+}
+EOF
+}
+resource "aws_iam_policy" "sentinel_task_policy" {
+  name        = "sentinel-task-policy"
+  description = "IAM policy for Sentinel ECS task"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+        "Effect": "Allow",
+        "Action": [
+              "ssmmessages:CreateControlChannel",
+              "ssmmessages:CreateDataChannel",
+              "ssmmessages:OpenControlChannel",
+              "ssmmessages:OpenDataChannel"
+        ],
+        "Resource": "*"
         }
     ]
 }
