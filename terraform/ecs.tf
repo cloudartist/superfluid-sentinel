@@ -41,7 +41,7 @@ resource "aws_ecs_task_definition" "sentinel_task" {
     name = "sentinel-efs"
 
     efs_volume_configuration {
-      file_system_id          = "${aws_efs_file_system.sentinel_efs.id}"
+      file_system_id          = aws_efs_file_system.sentinel_efs.id
       root_directory          = "data"
       transit_encryption      = "ENABLED"
       transit_encryption_port = 2049
