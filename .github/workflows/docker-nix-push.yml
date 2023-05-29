@@ -1,0 +1,20 @@
+name: Deploy Nix Package as Docker Image
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build_nix_docker_image:
+    runs-on: nixos/nix
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Nix
+        run: nix-build docker.nix -o result
