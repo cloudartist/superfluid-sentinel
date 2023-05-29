@@ -98,3 +98,27 @@ resource "aws_iam_role" "sentinel_task_role" {
   }
   EOF
 }
+
+resource "aws_iam_policy" "sentinel_task_execution_policy" {
+  name   = "sentinel-task-execution-policy"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticfilesystem:ClientMount",
+        "elasticfilesystem:ClientWrite"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "sentinel_task_execution_policy_attachment_efs" {
+  role       = aws_iam_role.sentinel_task_execution_role.name
+  policy_arn = aws_iam_policy.sentinel_task_execution_policy.arn
+}
