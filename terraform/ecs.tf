@@ -35,9 +35,22 @@ resource "aws_ecs_task_definition" "sentinel_task" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
 
-  cpu    = "256"
-  memory = "512"
+  cpu    = "512"
+  memory = "1024"
+  volume {
+    name = "sentinel-efs"
 
+    efs_volume_configuration {
+      file_system_id          = aws_efs_file_system.sentinel_efs.id
+      root_directory          = "data"
+      transit_encryption      = "ENABLED"
+      transit_encryption_port = 2049
+      authorization_config {
+        access_point_id = aws_efs_access_point.sentinel.id
+        iam             = "ENABLED"
+      }
+    }
+  }
   container_definitions = <<EOF
   [
     {
@@ -60,6 +73,12 @@ resource "aws_ecs_task_definition" "sentinel_task" {
       ],
       "portMappings": [
         { "containerPort": 9100, "hostPort": 9100 }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "sentinel-efs",
+          "containerPath": "/app/data"
+        }
       ],
       "essential": true,
       "logConfiguration": {
